@@ -1,40 +1,41 @@
 import React from 'react';
 import {Button, StyleSheet, Text, View} from 'react-native';
+import {DrawerActions} from 'react-navigation-drawer'
 
 export default class Page4 extends React.Component {
+    /**
+     * this.props.navigation.openDrawer();
+     * this.props.navigation.closeDrawer();
+     * this.props.navigation.toggleDrawer();
+     * 或者
+     * this.props.navigation.dispatch(DrawerActions.openDrawer());
+     * this.props.navigation.dispatch(DrawerActions.closeDrawer());
+     * this.props.navigation.dispatch(DrawerActions.toggleDrawer());
+     */
     render() {
         const {navigation} = this.props;
-        return <View style={{flex: 1, backgroundColor: "gray",}}>
+        return <View style={{flex: 1, backgroundColor: "gray", paddingTop: 30}}>
             <Text style={styles.text}>欢迎来到Page4</Text>
+            <Button title={'Open Drawer'} onPress={() => {
+                navigation.dispatch(DrawerActions.openDrawer())
+            }}/>
             <Button
-                onPress={() => navigation.openDrawer()}
-                title="Open drawer"
-            />
+                title={'Toggle Drawer'}
+                onPress={() => {
+                    navigation.toggleDrawer();
+                }}/>
             <Button
-                onPress={() => navigation.toggleDrawer()}
-                title="Toggle drawer"
-            />
-            <Button
-                onPress={() => navigation.navigate('Page5')}
-                title="Go to Page5"
-            />
+                title={'Open Page5'}
+                onPress={() => {
+                    navigation.navigate('Page5');
+                }}/>
         </View>
     }
+
 }
 const styles = StyleSheet.create({
     text: {
         fontSize: 20,
         color: 'white'
-    },
-    showText: {
-        marginTop: 30,
-        fontSize: 20,
-        color: 'blue'
-    },
-    input: {
-        height: 50,
-        borderWidth: 1,
-        marginTop: 10,
-        borderColor: 'black'
     }
 });

@@ -1,79 +1,75 @@
 import React from 'react';
-import {createDrawerNavigator, createStackNavigator, DrawerItems, SafeAreaView} from 'react-navigation';
-import {createBottomTabNavigator, createMaterialTopTabNavigator} from 'react-navigation-tabs';
-import Page1 from '../pages/Page1'
-import Page2 from '../pages/Page2'
-import Page3 from '../pages/Page3'
-import Page4 from '../pages/Page4'
-import Page5 from '../pages/Page5'
-import HomePage from '../pages/HomePage'
-import {Button, Platform, ScrollView} from 'react-native'
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import DynamicTabNavigator from "./DynamicTabNavigator";
+import {createStackNavigator} from 'react-navigation-stack'
+import {SafeAreaView} from 'react-navigation'
+import {createBottomTabNavigator, createMaterialTopTabNavigator} from 'react-navigation-tabs'
+import Page1 from '../pages/Page1';
+import Page2 from '../pages/Page2';
+import Page4 from '../pages/Page4';
+import Page5 from '../pages/Page5';
+import Page3 from '../pages/Page3';
+import HomePage from '../pages/HomePage';
+import {Button, Text, ScrollView} from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons'
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
+import {createDrawerNavigator, DrawerNavigatorItems} from 'react-navigation-drawer'
+import SwitchNavigator from './SwitchNavigator'
 
-export const DrawerNav = createDrawerNavigator({
+const DrawerNav = createDrawerNavigator(
+    {
         Page4: {
             screen: Page4,
             navigationOptions: {
                 drawerLabel: 'Page4',
-                drawerIcon: ({tintColor}) => (
-                    <MaterialIcons name="drafts" size={24} style={{color: tintColor}}/>
-                ),
+                drawerIcon: ({tintColor, focused}) => (
+                    <MaterialIcons name={'drafts'}
+                                   size={24}
+                                   style={{color: tintColor}}
+                    />
+                )
             }
         },
         Page5: {
             screen: Page5,
             navigationOptions: {
                 drawerLabel: 'Page5',
-                drawerIcon: ({tintColor}) => (
+                drawerIcon: ({tintColor, focused}) => (
                     <MaterialIcons
                         name="move-to-inbox"
                         size={24}
                         style={{color: tintColor}}
                     />
-                ),
+                )
             }
-        },
+        }
     },
     {
-        initialRouteName: 'Page4',
-        contentOptions: {
-            activeTintColor: '#e91e63',
-        },
-        contentComponent: (props) => (
-            <ScrollView style={{backgroundColor: '#987656', flex: 1}}>
-                <SafeAreaView forceInset={{top: 'always', horizontal: 'never'}}>
-                    <DrawerItems {...props} />
+        contentComponent: (props) => (//自定义侧拉抽屉
+            <ScrollView style={{backgroundColor: '#098', flex: 1}}>
+                <SafeAreaView forceInset={{top: "always"}}>
+                    <DrawerNavigatorItems {...props}/>
                 </SafeAreaView>
             </ScrollView>
-        )
+        ),
+        contentOptions: {
+            activeTintColor: 'white'
+        }
     }
 );
-export const MaterialTopTabNavigator = createMaterialTopTabNavigator({//在这里配置页面的路由
+
+const MaterialTopTabNavigator = createMaterialTopTabNavigator(
+    {//在这里配置页面的路由
         Page1: {
             screen: Page1,
             navigationOptions: {
-                tabBarLabel: 'Page10',
-                tabBarIcon: ({tintColor, focused}) => (
-                    <Ionicons
-                        name={'ios-home'}
-                        size={26}
-                        style={{color: tintColor}}
-                    />
-                ),
+                tabBarLabel: 'Page1',
+
             }
         },
-        Page4: {
-            screen: Page4,
+        Page2: {
+            screen: Page2,
             navigationOptions: {
-                tabBarLabel: 'Page4',
-                tabBarIcon: ({tintColor, focused}) => (
-                    <Ionicons
-                        name={'ios-people'}
-                        size={26}
-                        style={{color: tintColor}}
-                    />
+                tabBarLabel: ({tintColor, focused}) => (//自定义Tab文字
+                    <Text style={{color: focused ? 'orange' : 'grey'}}>Page2</Text>
                 ),
             }
         },
@@ -81,133 +77,133 @@ export const MaterialTopTabNavigator = createMaterialTopTabNavigator({//在这�
             screen: Page3,
             navigationOptions: {
                 tabBarLabel: 'Page3',
-                tabBarIcon: ({tintColor, focused}) => (
-                    <Ionicons
-                        name={'ios-chatboxes'}
-                        size={26}
-                        style={{color: tintColor}}
-                    />
-                ),
             }
         },
+
     },
     {
         tabBarOptions: {
-            tabStyle: {
+            // activeTintColor: 'red'
+            tabStyle: {//tab
                 minWidth: 50
             },
-            upperCaseLabel: false,//是否使标签大写，默认为true
-            scrollEnabled: true,//是否支持 选项卡滚动，默认false
-            // activeTintColor: 'white',//label和icon的前景色 活跃状态下（选中）
-            // inactiveTintColor: 'gray',//label和icon的前景色 活跃状态下（未选中）
+            upperCaseLabel: false,//是否使标签大写，默认为true,
             style: {
-                backgroundColor: '#678',//TabBar 的背景颜色
+                backgroundColor: '#879'
             },
-            indicatorStyle: {
+            indicatorStyle: {//指示器样式
                 height: 2,
-                backgroundColor: 'white',
-            },//标签指示器的样式
-            labelStyle: {
+                backgroundColor: 'white'
+            },
+            labelStyle: {//文字的样式
                 fontSize: 13,
                 marginTop: 6,
-                marginBottom: 6,
-            },//文字的样式
-        },
-    }
-);
-export const BottomTabNavigator = createBottomTabNavigator({//在这里配置页面的路由
-    Page1: {
-        screen: Page1,
-        navigationOptions: {
-            tabBarLabel: 'Page10',
-            tabBarIcon: ({tintColor, focused}) => (
-                <Ionicons
-                    name={'ios-home'}
-                    size={26}
-                    style={{color: tintColor}}
-                />
-            ),
-        }
-    },
-    Page2: {
-        screen: Page2,
-        navigationOptions: {
-            tabBarLabel: 'Page2',
-            tabBarIcon: ({tintColor, focused}) => (
-                <Ionicons
-                    name={'ios-people'}
-                    size={26}
-                    style={{color: tintColor}}
-                />
-            ),
-        }
-    },
-    Page3: {
-        screen: Page3,
-        navigationOptions: {
-            tabBarLabel: 'Page3',
-            tabBarIcon: ({tintColor, focused}) => (
-                <Ionicons
-                    name={'ios-chatboxes'}
-                    size={26}
-                    style={{color: tintColor}}
-                />
-            ),
-        }
-    },
-}, {
-    tabBarOptions: {
-        activeTintColor: Platform.OS === 'ios' ? '#e91e63' : '#fff',
-    }
-});
-export const AppStackNavigator = createStackNavigator({
-    HomePage: {
-        screen: HomePage
-    },
-    Page1: {
-        screen: Page1,
-        navigationOptions: ({navigation}) => ({
-            title: `${navigation.state.params.name}页面名`//动态设置navigationOptions
-        })
-    },
-    Page2: {
-        screen: Page2,
-        navigationOptions: {//在这里定义每个页面的导航属性，静态配置
-            title: "This is Page2.",
-        }
-    },
-    Page3: {
-        screen: Page3,
-        navigationOptions: (props) => {//在这里定义每个页面的导航属性，动态配置
-            const {navigation} = props;
-            const {state, setParams} = navigation;
-            const {params} = state;
-            return {
-                title: params.title ? params.title : 'This is Page3',
-                headerRight: (
-                    <Button
-                        title={params.mode === 'edit' ? '保存' : '编辑'}
-                        onPress={() =>
-                            setParams({mode: params.mode === 'edit' ? '' : 'edit'})}
-                    />
-                ),
+                marginBottom: 6
             }
         }
+    }
+);
+
+
+const BottomTabNavigator = createBottomTabNavigator(
+    {//在这里配置页面的路由
+        Page1: {
+            screen: Page1,
+            navigationOptions: {
+                tabBarLabel: 'Page1',
+                tabBarIcon: ({tintColor, focused}) => (
+                    <Ionicons
+                        name={'ios-home'}
+                        size={26}
+                        style={{color: tintColor}}
+                    />
+                )
+            }
+        },
+        Page2: {
+            screen: Page2,
+            navigationOptions: {
+                tabBarLabel: ({tintColor, focused}) => (//自定义Tab文字
+                    <Text style={{color: focused ? 'orange' : 'grey',textAlign: 'center'}}>Page2</Text>
+                ),
+                tabBarIcon: ({tintColor, focused}) => (
+                    <Ionicons
+                        name={'ios-people'}
+                        size={26}
+                        style={{color: focused ? 'orange' : 'grey'}}
+                    />
+                )
+            }
+        }
+
     },
-    TabNav: {
-        screen: DynamicTabNavigator,
-        navigationOptions: {//在这里定义每个页面的导航属性，静态配置
-            title: "This is TabNavigator.",
-            header: null,// 可以通过将header设为null 来禁用StackNavigator的Navigation Bar
-        }
-    }, DrawerNav: {
-        screen: DrawerNav,
-        navigationOptions: {//在这里定义每个页面的导航属性，静态配置
-            title: "This is DrawerNavigator.",
+    {
+        tabBarOptions: {
+            activeTintColor: 'red'
         }
     }
-}, {
-    navigationOptions: {
-        // header: null,// 可以通过将header设为null 来禁用StackNavigator的Navigation Bar
+);
+
+
+export const AppStackNavigator = createStackNavigator(
+    {
+        HomePage: {
+            screen: HomePage,
+        },
+        DrawerNav: DrawerNav,
+        SwitchNav: SwitchNavigator,
+        MaterialTopTabNavigator: {
+            screen: MaterialTopTabNavigator,
+            navigationOptions: {
+                title: '顶部导航器'
+            }
+        },
+        BottomTabNavigator: {
+            screen: BottomTabNavigator,
+            navigationOptions: {
+                title: '底部导航器',
+                header: null
+            }
+        },
+        Page1: {
+            screen: Page1,
+            navigationOptions: ({navigation}) => (
+                {
+                    title: `${navigation.state.params && navigation.state.params.name}页面名`//动态设置navigationOptions
+                }
+            )
+        },
+        Page2: {
+            screen: Page2,
+            navigationOptions: {
+                title: "Page2",
+                // header:null
+            }
+        },
+        Page3: {
+            screen: Page3,
+            navigationOptions: (props) => {
+                const {navigation} = props;
+                const {state, setParams} = navigation;
+                const {params = {}} = state;
+                return {
+                    title: params.name ? params.name : "This is Page3",
+                    headerRight: (
+                        <Button
+                            title={params.mode === 'edit' ? '保存' : "编辑"}
+                            onPress={() => {
+                                setParams({mode: params.mode === 'edit' ? "" : 'edit'})
+                            }}
+                        />
+                    )
+                }
+            }
+        },
+
+    },
+    {
+        defaultNavigationOptions: {//全局默认属性，对当前导航器的所有页面有效
+            // header: null //可以通过将header设为null 来禁用StackNavigator的Navigation Bar
+        }
     }
-});
+);
