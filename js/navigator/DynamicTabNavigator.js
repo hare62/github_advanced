@@ -56,7 +56,7 @@ const TABS = {//在这里配置页面的路由
     MyPage: {
         screen: MyPage,
         navigationOptions: {
-            tabBarLabel: '我的ya',
+            tabBarLabel: '我的',
             tabBarIcon: ({tintColor, focused}) => (
                 <Entypo
                     name={'user'}
