@@ -4,6 +4,7 @@ import { createMaterialTopTabNavigator } from 'react-navigation-tabs';
 import { createAppContainer } from 'react-navigation';
 import { connect } from 'react-redux';
 import actions from '../action/index';
+import PopularItem from '../common/PopularItem'
 
 
 const URL = 'https://api.github.com/search/repositories?q=';
@@ -12,9 +13,10 @@ const THEME_COLOR = 'red'
 
 // 1.
 export default class PopularPage extends Component {
+
     constructor(props) {
         super(props);
-        this.tabNames = ['java', 'Android', 'Java', 'React', 'React Native', 'PHP'];
+        this.tabNames = ['All', 'Android', 'Java', 'React', 'React Native', 'PHP'];
     }
 
     _genTabs() {
@@ -28,6 +30,7 @@ export default class PopularPage extends Component {
 
             };
         });
+        console.log("tabs",tabs)
         return tabs;
     }
 
@@ -83,11 +86,18 @@ class PopularTab extends Component {
 
     renderItem(data) {
         const item = data.item;
-        return <View style={{ marginBottom: 10 }}>
-            <Text style={{ backgroundColor: "#faa" }}>
-                {JSON.stringify(item)}
-            </Text>
-        </View>
+        // return <View style={{ marginBottom: 10 }}>
+        //     <Text style={{ backgroundColor: "#faa" }}>
+        //         {JSON.stringify(item)}
+        //     </Text>
+        // </View>
+        return <PopularItem 
+        
+            item={item}
+            onSelect={()=>{}}
+        >
+               
+        </PopularItem>
 
     }
 
