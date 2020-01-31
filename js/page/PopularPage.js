@@ -1,22 +1,27 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, AsyncStorage  } from 'react-native';
+import { View, Text, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { createMaterialTopTabNavigator } from 'react-navigation-tabs';
 import { createAppContainer } from 'react-navigation';
-import NavigationUtil from '../navigator/NavigationUtil';
-import DataStore from '../expand/dao/DataStore'
+import { connect } from 'react-redux';
+import actions from '../action/index';
 
+
+const URL = 'https://api.github.com/search/repositories?q=';
+const QUERY_STR = '&sort=stars';
+const THEME_COLOR = 'red'
+
+// 1.
 export default class PopularPage extends Component {
     constructor(props) {
         super(props);
-        this.tabNames = ['Java', 'Android', 'iOS', 'React', 'React Native', 'PHP'];
-        // this.
+        this.tabNames = ['java', 'Android', 'Java', 'React', 'React Native', 'PHP'];
     }
 
     _genTabs() {
         const tabs = {};
         this.tabNames.forEach((item, index) => {
             tabs[`tab${index}`] = {
-                screen: props => <PopularTab {...props} tabLabel={item} />,
+                screen: props => <PupolarTabPage {...props} tabLabel={item} />,
                 navigationOptions: {
                     title: item,
                 },
@@ -53,121 +58,82 @@ export default class PopularPage extends Component {
 
 class PopularTab extends Component {
     constructor(props) {
-       super(props);
-      this.state={
-        dataSource:[],
-        asyncStorageData:'初始数据',
-        showText:''
-      };
-      this.DataStore=new DataStore();
+        super(props);
+
+        const { tabLabel } = this.props;
+        console.log('tabLabel', this.props)
+        this.storeName = tabLabel
     }
 
-    async getAsyncStorageData() {
-        let url =`https://facebook.github.io/react-native/movies.json`;
-        this.DataStore.fetchData(url)
-        .then(data =>{
-            console.log(data)
-            let showText =`初次数据加载时间:${new Date(data.timestamp)}\n${JSON.stringify(data)}`;
-            this.setState({
-                showText
-            })
-        }).catch(error =>{
-            error && console.log(error.toString());
-        })
+    componentDidMount() {
+        this.loadData()
     }
-
     loadData() {
-        fetch('https://facebook.github.io/react-native/movies.json')
-            .then((response) =>{
-                if(response.ok){
-                  return  response.json()
-                }
-                throw new Error("NetWork response was not ok.")
-            })
-            .then((responseJson) => {
-                console.log(responseJson.movies)
+        const { onLoadPopularData } = this.props;
+        const url = this.genFetchUrl(this.storeName);
 
-                this.setState({
-                  
-                    dataSource: responseJson.description,
-                }, function () {
-
-                });
-
-            })
-            .catch((error) => {
-                console.error(error);
-                this.setState({
-                    dataSource: error.toString()
-                })
-            });
-    }
-
-   async saveData(){
-        try {
-            await AsyncStorage.setItem('@MySuperStore:key', 'I like to save it.');
-          } catch (error) {
-            // Error saving data
-          }
-    }
-
-    async  readData() {
-        try {
-            const value = await AsyncStorage.getItem('@MySuperStore:key');
-            if (value !== null) {
-              // We have data!!
-              console.log(value);
-              this.setState({
-                asyncStorageData:value
-              })
-            }
-           } catch (error) {
-             // Error retrieving data
-           }
+        onLoadPopularData(this.storeName, url)
 
     }
 
-   
+    genFetchUrl(key) {
+        console.log(URL + key + QUERY_STR)
+        return URL + key + QUERY_STR;
+    }
+
+    renderItem(data) {
+        const item = data.item;
+        return <View style={{ marginBottom: 10 }}>
+            <Text style={{ backgroundColor: "#faa" }}>
+                {JSON.stringify(item)}
+            </Text>
+        </View>
+
+    }
+
     render() {
+        const { popular } = this.props;
+        let store = popular[this.storeName];//动态获取state
+        if (!store) {//如果store 是空的话
+            store = {
+                items: [],
+                isLoading: false
+            }
+        }
         return (
-            <View>
-                <Text>PopularTab</Text>
-                <Text onPress={ 
-                    () => {
-                        console.log("你好")
-                        NavigationUtil.goPage({}, 'DetailPage');
+            <View style={styles.contains}>
+                <FlatList
+                    data={store.items}
+                    renderItem={data => this.renderItem(data)}
+                    keyExtractor={item => "" + item.id}
+                    refreshControl={
+                        <RefreshControl
+                            title={'Loading'}
+                            titleColor={THEME_COLOR}
+                            colors={[THEME_COLOR]}
+                            refreshing={store.isLoading}
+                            onRefresh={() => this.loadData()}
+                            tintColor={THEME_COLOR}
+                        />
                     }
-                }>跳转到详情页</Text>
-                <Text>Fetch的使用</Text>
-                <TextInput
-                    style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-                    onChangeText={text => { this.searchKey = text }}
-                   
-                />
-                <Button title="获取" onPress={() => { this.loadData() }}></Button>
-                <Button title="保存数据" onPress={() => { this.saveData() }}></Button>
-                <Text>{this.state.dataSource}</Text>
-                <Button title="读取数据" onPress={() => { this.readData() }}></Button>
-                <Text>{this.state.asyncStorageData}</Text>
-
-                <Text>离线缓存框架设计</Text>
-
-                <Button title="离线缓存框架设计" onPress={() => { this.getAsyncStorageData() }}></Button>
-                <Text>{this.state.showText}</Text>
+                ></FlatList>
             </View>
         );
     }
 }
+const mapStateToProps = state => ({
+    popular: state.popular
+})
+
+const mapDispatchToProps = dispatch => ({
+    onLoadPopularData: (storeName, url) => dispatch(actions.onLoadPopularData(storeName, url))
+})
+
+const PupolarTabPage = connect(mapStateToProps, mapDispatchToProps)(PopularTab)
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        marginTop: 30,
-    },
-    welcome: {
-        fontSize: 20,
-        textAlign: 'center',
-        margin: 10,
     },
     tabStyle: {
         minWidth: 50,
