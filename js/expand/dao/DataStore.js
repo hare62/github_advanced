@@ -1,7 +1,8 @@
 import {AsyncStorage}  from 'react-native';
-// import Trending from 'GitHubTrending';
+import Trending from 'GitHubTrending';
 
-// export const FLAG_STORAGE = {flag_popular: 'popular', flag_trending: 'trending'};
+
+export const FLAG_STORAGE = {flag_popular: 'popular', flag_trending: 'trending'};
 
 export default class DataStore {
 
@@ -12,7 +13,7 @@ export default class DataStore {
      * @returns {Promise}
      */
 
-    fetchData(url) {
+    fetchData(url, flag) {
         return new Promise((resolve, reject) => {
             this.fetchLocalData(url).then((wrapData) => {
                 if (wrapData && DataStore.checkTimestampValid(wrapData.timestamp)) {
@@ -20,7 +21,8 @@ export default class DataStore {
                     resolve(wrapData);
                 } else {
                     //线上数据
-                    this.fetchNetData(url).then((data) => {
+                    //更改 线上数据
+                    this.fetchNetData(url, flag).then((data) => {
                     //包装了时间
                         resolve(this._wrapData(data));
                     }).catch((error) => {
@@ -29,7 +31,7 @@ export default class DataStore {
                 }
 
             }).catch((error) => {
-                this.fetchNetData(url).then((data) => {
+                this.fetchNetData(url, flag).then((data) => {
                     resolve(this._wrapData(data));
                 }).catch((error => {
                     reject(error);
@@ -85,7 +87,7 @@ export default class DataStore {
      */
     fetchNetData(url, flag) {
         return new Promise((resolve, reject) => {
-            // if (flag !== FLAG_STORAGE.flag_trending) {
+            if (flag !== FLAG_STORAGE.flag_trending) {
                 fetch(url)
                     .then((response) => {
                         if (response.ok) {
@@ -100,19 +102,19 @@ export default class DataStore {
                     .catch((error) => {
                         reject(error);
                     })
-            // } else {
-            //     new Trending().fetchTrending(url)
-            //         .then(items => {
-            //             if (!items) {
-            //                 throw new Error('responseData is null');
-            //             }
-            //             this.saveData(url, items);
-            //             resolve(items);
-            //         })
-            //         .catch(error => {
-            //             reject(error);
-            //         })
-            // }
+            } else {
+                new Trending().fetchTrending(url)
+                    .then(items => {
+                        if (!items) {
+                            throw new Error('responseData is null');
+                        }
+                        this.saveData(url, items);
+                        resolve(items);
+                    })
+                    .catch(error => {
+                        reject(error);
+                    })
+            }
         })
     }
 

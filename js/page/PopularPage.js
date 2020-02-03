@@ -6,11 +6,12 @@ import { connect } from 'react-redux';
 import actions from '../action/index';
 import PopularItem from '../common/PopularItem';
 import Toast from 'react-native-easy-toast';
+import NavigationBar from '../common/NavigationBar';
 
 
 const URL = 'https://api.github.com/search/repositories?q=';
 const QUERY_STR = '&sort=stars';
-const THEME_COLOR = 'red'
+const THEME_COLOR = '#AA2F23'
 
 // 1.
 export default class PopularPage extends Component {
@@ -35,23 +36,39 @@ export default class PopularPage extends Component {
     }
 
     render() {
+        const {keys, theme} = this.props;
+        let statusBar = {
+            backgroundColor:"black",
+            barStyle: 'light-content',
+        };
+
+        let navigationBar = <NavigationBar
+            title={'最热'}
+            statusBar={statusBar}
+            // style={theme.styles.navBar}
+            style={{backgroundColor:THEME_COLOR}}
+            // rightButton={this.renderRightButton()}
+        />;
         const TabNavigator = createAppContainer(createMaterialTopTabNavigator(
             this._genTabs(),
             {
                 tabBarOptions: {
                     tabStyle: styles.tabStyle,
-                    upperCaseLabel: false,
-                    scrollEnabled: true,
+                    upperCaseLabel: false,//是否使标签大写，默认为true
+                    scrollEnabled: true,//是否支持 选项卡滚动，默认false
                     style: {
                         backgroundColor: '#a67',
+                         // 移除以适配react-navigation4x
+                        // height: 30//fix 开启scrollEnabled后再Android上初次加载时闪烁问题
                     },
-                    indicatorStyle: styles.indicatorStyle,
-                    labelStyle: styles.labelStyle,
+                    indicatorStyle: styles.indicatorStyle,//标签指示器的样式
+                    labelStyle: styles.labelStyle,//文字的样式
                 },
             },
         ));
         return (
             <View style={styles.container}>
+                {navigationBar}
                 <TabNavigator />
             </View>
         );
@@ -129,6 +146,7 @@ class PopularTab extends Component {
     }
 
     genIndicator() {
+      
         return this._store().hideLoadingMore ? null :
             <View style={styles.indicatorContainer}>
                 <ActivityIndicator
@@ -200,7 +218,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     tabStyle: {
-        minWidth: 50,
+         // minWidth: 50 //fix minWidth会导致tabStyle初次加载时闪烁
+         padding: 0
     },
     indicatorStyle: {
         height: 2,
