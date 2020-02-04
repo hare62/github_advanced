@@ -1,5 +1,14 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
+import {
+    StyleSheet,
+    ActivityIndicator,
+    TouchableOpacity,
+    Text,
+    View,
+    FlatList,
+    RefreshControl,
+    DeviceEventEmitter,
+} from 'react-native';
 import { createMaterialTopTabNavigator } from 'react-navigation-tabs';
 import { createAppContainer } from 'react-navigation';
 import { connect } from 'react-redux';
@@ -7,25 +16,54 @@ import actions from '../action/index';
 import TrendingItem from '../common/TrendingItem';
 import Toast from 'react-native-easy-toast';
 import NavigationBar from '../common/NavigationBar';
-
+import TrendingDialog, { TimeSpans } from '../common/TrendingDialog'
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 
 const URL = 'https://github.com/trending/';
 const QUERY_STR = '&sort=stars';
 const THEME_COLOR = '#AA2F23'
-
+const EVENT_TYPE_TIME_SPAN_CHANGE = 'EVENT_TYPE_TIME_SPAN_CHANGE'
 // 1.
 export default class TrendingPage extends Component {
 
     constructor(props) {
         super(props);
-        this.tabNames = ['C','C#', 'PHP', 'JavaScript'];
+        this.tabNames = ['C', 'C#', 'PHP', 'JavaScript'];
+        this.state = {
+            timeSpan: TimeSpans[0],
+        };
+    }
+
+
+    renderTitleView() {
+        return <View>
+            <TouchableOpacity
+                underlayColor='transparent'
+                onPress={() => this.dialog.show()}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={{
+                        fontSize: 18,
+                        color: '#FFFFFF',
+                        fontWeight: '400',
+                    }}>趋势{this.state.timeSpan.showText}</Text>
+                    <MaterialIcons
+                        name={'arrow-drop-down'}
+                        size={22}
+                        style={{ color: 'white' }}
+                    />
+                </View>
+            </TouchableOpacity>
+        </View>;
     }
 
     _genTabs() {
         const tabs = {};
         this.tabNames.forEach((item, index) => {
             tabs[`tab${index}`] = {
-                screen: props => <TrendingTabPage {...props} tabLabel={item} />,
+                // screen: props => <TrendingTabPage {...props} tabLabel={item} />,
+                screen: props => <TrendingTabPage {...props} timeSpan={this.state.timeSpan} tabLabel={item}
+                    // theme={theme} 
+                    />,//初始化Component时携带默认参数 @https://github.com/react-navigation/react-navigation/issues/2392
                 navigationOptions: {
                     title: item,
                 },
@@ -34,39 +72,64 @@ export default class TrendingPage extends Component {
         });
         return tabs;
     }
+    onSelectTimeSpan(tab) {
+        this.dialog.dismiss();
+        this.setState({
+            timeSpan: tab,
+        });
+        DeviceEventEmitter.emit(EVENT_TYPE_TIME_SPAN_CHANGE, tab);
+    }
+
+
+
+    renderTrendingDialog() {
+        return <TrendingDialog
+            ref={dialog => this.dialog = dialog}
+            onSelect={tab => this.onSelectTimeSpan(tab)}
+        />;
+    }
+    _tabNav() {
+        if(!this.tabNav){//优化效率：根据需要选择是否重新创建建TabNavigator，通常tab改变后才重新创建
+            this.tabNav = createAppContainer(createMaterialTopTabNavigator(
+                this._genTabs(),
+                {
+                    tabBarOptions: {
+                        tabStyle: styles.tabStyle,
+                        upperCaseLabel: false,
+                        scrollEnabled: true,
+                        style: {
+                            backgroundColor: '#a67',
+                        },
+                        indicatorStyle: styles.indicatorStyle,
+                        labelStyle: styles.labelStyle,
+                    },
+                },
+            ));
+        }
+
+        return this.tabNav
+    }
 
     render() {
         let statusBar = {
-            backgroundColor:"black",
+            backgroundColor: "black",
             barStyle: 'light-content',
         };
 
         let navigationBar = <NavigationBar
-            title={'趋势'}
+            titleView={this.renderTitleView()}
             statusBar={statusBar}
             // style={theme.styles.navBar}
-            style={{backgroundColor:THEME_COLOR}}
-            // rightButton={this.renderRightButton()}
+            style={{ backgroundColor: THEME_COLOR }}
+        // rightButton={this.renderRightButton()}
         />;
-        const TabNavigator = createAppContainer(createMaterialTopTabNavigator(
-            this._genTabs(),
-            {
-                tabBarOptions: {
-                    tabStyle: styles.tabStyle,
-                    upperCaseLabel: false,
-                    scrollEnabled: true,
-                    style: {
-                        backgroundColor: '#a67',
-                    },
-                    indicatorStyle: styles.indicatorStyle,
-                    labelStyle: styles.labelStyle,
-                },
-            },
-        ));
+
+        const TabNavigator =this._tabNav();
         return (
             <View style={styles.container}>
                 {navigationBar}
                 <TabNavigator />
+                {this.renderTrendingDialog()}
             </View>
         );
     }
@@ -77,12 +140,33 @@ class TrendingTab extends Component {
     constructor(props) {
         super(props);
 
-        const { tabLabel } = this.props;
+        const { tabLabel, timeSpan} = this.props;
+        this.timeSpan = timeSpan;
         this.storeName = tabLabel
     }
 
     componentDidMount() {
         this.loadData()
+        this.timeSpanChangeListener = DeviceEventEmitter.addListener(EVENT_TYPE_TIME_SPAN_CHANGE, (timeSpan) => {
+            this.timeSpan = timeSpan;
+            this.loadData();
+        });
+        // EventBus.getInstance().addListener(EventTypes.favoriteChanged_trending, this.favoriteChangeListener = () => {
+        //     this.isFavoriteChanged = true;
+        // });
+        // EventBus.getInstance().addListener(EventTypes.bottom_tab_select, this.bottomTabSelectListener = (data) => {
+        //     if (data.to === 1 && this.isFavoriteChanged) {
+        //         this.loadData(null, true);
+        //     }
+        // });
+
+    }
+    componentWillUnmount() {
+        if (this.timeSpanChangeListener) {
+            this.timeSpanChangeListener.remove();
+        }
+        // EventBus.getInstance().removeListener(this.favoriteChangeListener);
+        // EventBus.getInstance().removeListener(this.bottomTabSelectListener);
     }
     /**
     * 获取与当前页面有关的数据
@@ -112,17 +196,17 @@ class TrendingTab extends Component {
                 this.refs.toast.show('没有更多了');
             })
         } else {
-          
-            onRefreshTrending(this.storeName, url,pageSize)
+
+            onRefreshTrending(this.storeName, url, pageSize)
         }
 
-       
+
 
     }
 
     genFetchUrl(key) {
-      
-        return URL + key + '?since=daily'; 
+
+        return URL + key  + '?' + this.timeSpan.searchText;
     }
 
     renderItem(data) {
@@ -153,7 +237,7 @@ class TrendingTab extends Component {
     }
 
     render() {
-       
+
         let store = this._store();
         return (
             <View style={styles.contains}>
@@ -184,14 +268,14 @@ class TrendingTab extends Component {
                             }
                         }, 100);
                     }}
-                   
+
                     onMomentumScrollBegin={() => {
                         this.canLoadMore = true; //fix 初始化时页调用onEndReached的问题
                         console.log('---onMomentumScrollBegin-----')
                     }}
                 ></FlatList>
-                 <Toast ref={'toast'}
-                       position={'center'}
+                <Toast ref={'toast'}
+                    position={'center'}
                 />
             </View>
         );
@@ -202,7 +286,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => ({
-    onRefreshTrending: (storeName, url,pageSize) => dispatch(actions.onRefreshTrending(storeName, url,pageSize)),
+    onRefreshTrending: (storeName, url, pageSize) => dispatch(actions.onRefreshTrending(storeName, url, pageSize)),
     onLoadMoreTrending: (storeName, pageIndex, pageSize, items, callBack) =>
         dispatch(actions.onLoadMoreTrending(storeName, pageIndex, pageSize, items, callBack))
 })
