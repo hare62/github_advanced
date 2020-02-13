@@ -1,28 +1,16 @@
 import React, { Component } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, } from 'react-native'
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-// import BaseItem from "./BaseItem";
+import BaseItem from "./BaseItem";
 
-export default class PopularItem extends Component {
+export default class PopularItem extends BaseItem {
     render() {
-        const { item } = this.props;
-        // const {item} = projectModel;
-
-        let favoriteIcon = <TouchableOpacity
-            style={{ padding: 6 }}
-            underlayColor='transparent'
-            onPress={() => {}}>
-            <FontAwesome
-                name={'star-o'}
-                size={26}
-                style={{ color: 'red'}}
-            />
-        </TouchableOpacity>
-
+        const { projectModel } = this.props;
+        const {item} = projectModel;
         if (!item || !item.owner) return null;
         return (
             <TouchableOpacity
-                onPress={() => this.props.onSelect}
+                onPress={() => this.onItemClick()}
             >
                 <View style={styles.cell_container}>
                     <Text style={styles.title}>
@@ -42,7 +30,7 @@ export default class PopularItem extends Component {
                             <Text>Start:</Text>
                             <Text>{item.stargazers_count}</Text>
                         </View>
-                        {favoriteIcon}
+                        {this._favoriteIcon()}
                     </View>
                 </View>
 

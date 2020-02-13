@@ -1,4 +1,5 @@
-import AsyncStorage from '@react-native-community/async-storage';
+import { AsyncStorage } from 'react-native'
+// import console = require('console');
 const FAVORITE_KEY_PREFIX = 'favorite_';
 export default class FavoriteDao {
     constructor(flag) {
@@ -71,6 +72,7 @@ export default class FavoriteDao {
     }
     /**
      * 获取所以收藏的项目
+     * 数据加载的时候需要知道所有item的收藏状态
      * @return {Promise}
      */
     getAllItems() {
@@ -86,6 +88,7 @@ export default class FavoriteDao {
                                 let value = store[i][1];
                                 if (value) items.push(JSON.parse(value));
                             });
+                            console.log("获取所以收藏的项目",items)
                             resolve(items);
                         } catch (e) {
                             reject(e);
