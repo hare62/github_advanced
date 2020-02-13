@@ -22,7 +22,12 @@ const MainNavigator = createStackNavigator({
             header: null,//隐藏头部
         },
     },
-    DetailPage: DetailPage,
+    DetailPage:  {
+        screen: DetailPage,
+        navigationOptions: {
+            header: null,//隐藏头部
+        }
+    }
 });
 export default createAppContainer(createSwitchNavigator({
     Init: InitNavigator,

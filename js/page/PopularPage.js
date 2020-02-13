@@ -7,8 +7,11 @@ import actions from '../action/index';
 import PopularItem from '../common/PopularItem';
 import Toast from 'react-native-easy-toast';
 import NavigationBar from '../common/NavigationBar';
-
-
+import FavoriteDao from "../expand/dao/FavoriteDao";
+import {FLAG_STORAGE} from "../expand/dao/DataStore";
+import FavoriteUtil from "../util/FavoriteUtil";
+import NavigationUtil from '../navigator/NavigationUtil';
+const favoriteDao = new FavoriteDao(FLAG_STORAGE.flag_popular);
 const URL = 'https://api.github.com/search/repositories?q=';
 const QUERY_STR = '&sort=stars';
 const THEME_COLOR = '#AA2F23'
@@ -20,6 +23,7 @@ export default class PopularPage extends Component {
         super(props);
         this.tabNames = ['All', 'Android', 'Java', 'React', 'React Native', 'PHP'];
     }
+
 
     _genTabs() {
         const tabs = {};
@@ -36,9 +40,9 @@ export default class PopularPage extends Component {
     }
 
     render() {
-        const {keys, theme} = this.props;
+        const { keys, theme } = this.props;
         let statusBar = {
-            backgroundColor:"black",
+            backgroundColor: "black",
             barStyle: 'light-content',
         };
 
@@ -46,8 +50,8 @@ export default class PopularPage extends Component {
             title={'最热'}
             statusBar={statusBar}
             // style={theme.styles.navBar}
-            style={{backgroundColor:THEME_COLOR}}
-            // rightButton={this.renderRightButton()}
+            style={{ backgroundColor: THEME_COLOR }}
+        // rightButton={this.renderRightButton()}
         />;
         const TabNavigator = createAppContainer(createMaterialTopTabNavigator(
             this._genTabs(),
@@ -58,7 +62,7 @@ export default class PopularPage extends Component {
                     scrollEnabled: true,//是否支持 选项卡滚动，默认false
                     style: {
                         backgroundColor: '#a67',
-                         // 移除以适配react-navigation4x
+                        // 移除以适配react-navigation4x
                         // height: 30//fix 开启scrollEnabled后再Android上初次加载时闪烁问题
                     },
                     indicatorStyle: styles.indicatorStyle,//标签指示器的样式
@@ -111,42 +115,41 @@ class PopularTab extends Component {
         const url = this.genFetchUrl(this.storeName);
         let pageIndex = ++store.pageIndex
         if (loadMore) {
-            onLoadMorePopular(this.storeName, pageIndex, pageSize, store.items, callback => {
+            onLoadMorePopular(this.storeName, pageIndex, pageSize, store.items, favoriteDao, callback => {
                 this.refs.toast.show('没有更多了');
             })
         } else {
-          
-            onLoadPopularData(this.storeName, url,pageSize)
+
+            onLoadPopularData(this.storeName, url, pageSize, favoriteDao)
         }
 
-       
+
 
     }
 
     genFetchUrl(key) {
-      
-        return URL + key + QUERY_STR; 
+
+        return URL + key + QUERY_STR;
     }
 
     renderItem(data) {
         const item = data.item;
-        // return <View style={{ marginBottom: 10 }}>
-        //     <Text style={{ backgroundColor: "#faa" }}>
-        //         {JSON.stringify(item)}
-        //     </Text>
-        // </View>
         return <PopularItem
-
-            item={item}
-            onSelect={() => { }}
-        >
-
-        </PopularItem>
-
+            projectModel={item}
+            onSelect={(callback) => {
+                NavigationUtil.goPage({
+                    projectModel: item,
+                    flag:FLAG_STORAGE.flag_popular,
+                    callback
+                }, 'DetailPage')
+                //  this.props.navigation.navigate('tab1');//跳转到createMaterialTopTabNavigator中的指定tab，主要这个navigation一定要是在跳转到createMaterialTopTabNavigator中的指页面获取的
+            }}
+            onFavorite={(item, isFavorite) => FavoriteUtil.onFavorite(favoriteDao, item, isFavorite, FLAG_STORAGE.flag_popular)}
+        />
     }
 
     genIndicator() {
-      
+
         return this._store().hideLoadingMore ? null :
             <View style={styles.indicatorContainer}>
                 <ActivityIndicator
@@ -164,7 +167,7 @@ class PopularTab extends Component {
                 <FlatList
                     data={store.projectModels}
                     renderItem={data => this.renderItem(data)}
-                    keyExtractor={item => "" + item.id}
+                    keyExtractor={item => "" + item.item.id}
                     refreshControl={
                         <RefreshControl
                             title={'Loading'}
@@ -188,14 +191,14 @@ class PopularTab extends Component {
                             }
                         }, 100);
                     }}
-                   
+
                     onMomentumScrollBegin={() => {
                         this.canLoadMore = true; //fix 初始化时页调用onEndReached的问题
                         console.log('---onMomentumScrollBegin-----')
                     }}
                 ></FlatList>
-                 <Toast ref={'toast'}
-                       position={'center'}
+                <Toast ref={'toast'}
+                    position={'center'}
                 />
             </View>
         );
@@ -206,9 +209,9 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => ({
-    onLoadPopularData: (storeName, url,pageSize) => dispatch(actions.onLoadPopularData(storeName, url,pageSize)),
-    onLoadMorePopular: (storeName, pageIndex, pageSize, items, callBack) =>
-        dispatch(actions.onLoadMorePopular(storeName, pageIndex, pageSize, items, callBack))
+    onLoadPopularData: (storeName, url, pageSize, favoriteDao) => dispatch(actions.onLoadPopularData(storeName, url, pageSize, favoriteDao)),
+    onLoadMorePopular: (storeName, pageIndex, pageSize, items, favoriteDao, callBack) =>
+        dispatch(actions.onLoadMorePopular(storeName, pageIndex, pageSize, items, favoriteDao, callBack))
 })
 
 const PupolarTabPage = connect(mapStateToProps, mapDispatchToProps)(PopularTab)
@@ -218,8 +221,8 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     tabStyle: {
-         // minWidth: 50 //fix minWidth会导致tabStyle初次加载时闪烁
-         padding: 0
+        // minWidth: 50 //fix minWidth会导致tabStyle初次加载时闪烁
+        padding: 0
     },
     indicatorStyle: {
         height: 2,
