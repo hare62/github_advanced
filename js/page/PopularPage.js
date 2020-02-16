@@ -147,9 +147,7 @@ class PopularTab extends Component {
             onFavorite={(item, isFavorite) => FavoriteUtil.onFavorite(favoriteDao, item, isFavorite, FLAG_STORAGE.flag_popular)}
         />
     }
-
     genIndicator() {
-
         return this._store().hideLoadingMore ? null :
             <View style={styles.indicatorContainer}>
                 <ActivityIndicator
