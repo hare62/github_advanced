@@ -2,6 +2,7 @@ import {combineReducers} from 'redux';
 import theme from './theme';
 import popular from './popular';
 import trending from './rending';
+import favorite from './favorite'
 
 /**
  * 1.合并reducer
@@ -10,7 +11,8 @@ import trending from './rending';
 const index = combineReducers({
     theme:theme,
     popular:popular,
-    trending:trending
+    trending:trending,
+    favorite:favorite
 
 
 });
