@@ -44,6 +44,8 @@ export default class PopularPage extends Component {
         let statusBar = {
             backgroundColor: "black",
             barStyle: 'light-content',
+            // translucent:true,
+            // opacity:0.1
         };
 
         let navigationBar = <NavigationBar

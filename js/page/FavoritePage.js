@@ -9,10 +9,11 @@ import actions from '../action/index';
 import { connect } from 'react-redux';
 import FavoriteDao from '../expand/dao/FavoriteDao';
 import {FLAG_STORAGE} from "../expand/dao/DataStore";
-import FavoriteItem from '../common/FavoriteItem'
+import FavoriteItem from '../common/FavoriteItem';
+import NavigationBar from '../common/NavigationBar'
 // import console = require('console');
 const favoriteDao = new FavoriteDao(FLAG_STORAGE.flag_popular)
-
+const THEME_COLOR = '#AA2F23'
 export default class PopularPage extends Component {
     constructor(props) {
         super(props);
@@ -37,6 +38,21 @@ export default class PopularPage extends Component {
     }
 
     render() {
+
+        let statusBar = {
+            backgroundColor: "black",
+            barStyle: 'light-content',
+                        // translucent:true,
+                        // opacity:0.1
+        };
+
+        let navigationBar = <NavigationBar
+            title={'收藏'}
+            statusBar={statusBar}
+            // style={theme.styles.navBar}
+            style={{ backgroundColor: THEME_COLOR }}
+        // rightButton={this.renderRightButton()}
+        />;
         const TabNavigator = createAppContainer(createMaterialTopTabNavigator(
             this._genTabs(),
             {
@@ -54,6 +70,7 @@ export default class PopularPage extends Component {
         ));
         return (
             <View style={styles.container}>
+                {navigationBar}
                 <TabNavigator />
             </View>
         );
