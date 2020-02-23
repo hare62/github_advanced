@@ -8,7 +8,7 @@ import PopularItem from '../common/PopularItem';
 import Toast from 'react-native-easy-toast';
 import NavigationBar from '../common/NavigationBar';
 import FavoriteDao from "../expand/dao/FavoriteDao";
-import {FLAG_STORAGE} from "../expand/dao/DataStore";
+import { FLAG_STORAGE } from "../expand/dao/DataStore";
 import FavoriteUtil from "../util/FavoriteUtil";
 import NavigationUtil from '../navigator/NavigationUtil';
 const favoriteDao = new FavoriteDao(FLAG_STORAGE.flag_popular);
@@ -44,8 +44,7 @@ export default class PopularPage extends Component {
         let statusBar = {
             backgroundColor: "black",
             barStyle: 'light-content',
-            // translucent:true,
-            // opacity:0.1
+
         };
 
         let navigationBar = <NavigationBar
@@ -136,12 +135,13 @@ class PopularTab extends Component {
 
     renderItem(data) {
         const item = data.item;
+        console.log("oooopopular",item)
         return <PopularItem
             projectModel={item}
             onSelect={(callback) => {
                 NavigationUtil.goPage({
                     projectModel: item,
-                    flag:FLAG_STORAGE.flag_popular,
+                    flag: FLAG_STORAGE.flag_popular,
                     callback
                 }, 'DetailPage')
                 //  this.props.navigation.navigate('tab1');//跳转到createMaterialTopTabNavigator中的指定tab，主要这个navigation一定要是在跳转到createMaterialTopTabNavigator中的指页面获取的
@@ -162,7 +162,7 @@ class PopularTab extends Component {
     }
 
     render() {
-        const { popular } = this.props;
+        const { popular,item } = this.props;
         let store = this._store();
         return (
             <View style={styles.contains}>
@@ -207,7 +207,8 @@ class PopularTab extends Component {
     }
 }
 const mapStateToProps = state => ({
-    popular: state.popular
+    popular: state.popular,
+    
 })
 
 const mapDispatchToProps = dispatch => ({

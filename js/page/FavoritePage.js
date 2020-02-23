@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, TextInput, Button, AsyncStorage,FlatList  } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Button, AsyncStorage, FlatList } from 'react-native';
 import { createMaterialTopTabNavigator } from 'react-navigation-tabs';
 import { createAppContainer } from 'react-navigation';
 import NavigationUtil from '../navigator/NavigationUtil';
@@ -8,8 +8,9 @@ import DataStore from '../expand/dao/DataStore';
 import actions from '../action/index';
 import { connect } from 'react-redux';
 import FavoriteDao from '../expand/dao/FavoriteDao';
-import {FLAG_STORAGE} from "../expand/dao/DataStore";
-import FavoriteItem from '../common/FavoriteItem';
+import { FLAG_STORAGE } from "../expand/dao/DataStore";
+import PopularItem from '../common/PopularItem';
+import TrendingItem from '../common/TrendingItem';
 import NavigationBar from '../common/NavigationBar'
 // import console = require('console');
 const favoriteDao = new FavoriteDao(FLAG_STORAGE.flag_popular)
@@ -17,19 +18,22 @@ const THEME_COLOR = '#AA2F23'
 export default class PopularPage extends Component {
     constructor(props) {
         super(props);
-        this.tabNames = ['最热', '趋势'];
-        
+        this.tabNames = [
+            { title: '最热', flag: FLAG_STORAGE.flag_popular },
+            { title: '趋势', flag: FLAG_STORAGE.flag_trending }
+        ];
+
     }
 
- 
+
 
     _genTabs() {
         const tabs = {};
         this.tabNames.forEach((item, index) => {
             tabs[`tab${index}`] = {
-                screen: props => <PupolarTabPage {...props} tabLabel={item} />,
+                screen: props => <PupolarTabPage {...props} tabLabel={item.title} storeName={item.flag} />,
                 navigationOptions: {
-                    title: item,
+                    title: item.title,
                 },
 
             };
@@ -42,8 +46,8 @@ export default class PopularPage extends Component {
         let statusBar = {
             backgroundColor: "black",
             barStyle: 'light-content',
-                        // translucent:true,
-                        // opacity:0.1
+            // translucent:true,
+            // opacity:0.1
         };
 
         let navigationBar = <NavigationBar
@@ -80,29 +84,39 @@ export default class PopularPage extends Component {
 
 class PopularTab extends Component {
     constructor(props) {
-       super(props);
-      this.state={
-        dataSource:[],
-        asyncStorageData:'初始数据',
-        showText:''
-      };
-      this.DataStore=new DataStore();
+        super(props);
+        this.state = {
+            dataSource: [],
+            asyncStorageData: '初始数据',
+            showText: ''
+        };
+        this.DataStore = new DataStore();
+        const { tabLabel, storeName } = this.props;
+
+        this.storeName = storeName
     }
 
-    componentDidMount(){
-       const { onLoadfavoriteData } = this.props;
-       onLoadfavoriteData()
-       console.log("this.props",this.props)
+    componentDidMount() {
+        const { onLoadfavoriteData } = this.props;
+        onLoadfavoriteData(this.storeName)
+
+        //    console.log("this.props",this.props)
 
     }
 
-  
-    renderItem(data){
+
+    renderItem(data) {
         const item = data.item;
-        return(
-            <FavoriteItem
-              projectModel={item}
-            
+        console.log("ooooFAvorite", item)
+        // const item = data.item;
+        const Item = this.storeName === FLAG_STORAGE.flag_popular ? PopularItem : TrendingItem;
+        return (
+            <Item
+                projectModel={item}
+                onSelect={() => {
+                }}
+                onFavorite={() => { }}
+
             />
         )
 
@@ -120,18 +134,18 @@ class PopularTab extends Component {
         }
         return store;
     }
-   
+
     render() {
 
-        const { favorite } = this.props;
-    
+        let store = this._store();
+
         return (
             <View>
-                <Text>PopularTab</Text>
+
                 <FlatList
-                    data={favorite}
+                    data={store.projectModels}
                     renderItem={data => this.renderItem(data)}
-                   
+                    keyExtractor={item => "" + item.id}
                 ></FlatList>
             </View>
         );
@@ -144,7 +158,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = dispatch => ({
-    onLoadfavoriteData: () => dispatch(actions.onLoadfavoriteData())
+    onLoadfavoriteData: (storeName) => dispatch(actions.onLoadfavoriteData(storeName))
 })
 
 const PupolarTabPage = connect(mapStateToProps, mapDispatchToProps)(PopularTab)

@@ -24,9 +24,9 @@ export default function onAction(state = defaultState, action) {
     switch (action.type) {
         case Types.POPULAR_lOAD_SUCCESS://下拉刷新成功
             return {
-                ...state,
+                // ...state,
                 [action.storeName]: {
-                    ...state[action.storeName],
+                    // ...state[action.storeName],
                     items: action.items,//原始数据
                     projectModels: action.projectModels,//此次要展示的数据
                     isLoading: false,

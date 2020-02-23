@@ -7,7 +7,13 @@ export default function onAction(state = defaultState, action) {
         case types.FAVORITE_lOAD_SUCCESS://请求数据成功
              return {
                  ...state,
-                 ...action.projectModels,
+                 [action.storeName]: {
+                   
+                    // items: action.items,//原始数据
+                    projectModels: action.projectModels,//此次要展示的数据
+                  
+
+                }
                  
              }
         default:
